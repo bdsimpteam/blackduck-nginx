@@ -264,6 +264,10 @@ location ~ ^/(jwt/token)/?$ {
     if ($http_content_type ~ (!(.*application/json)) ) {
          error_page 500 502 503 504 /error.html;
     }
+
+    if ($ssl_client_verify != "SUCCESS") {
+        return 403;
+    }
      proxy_connect_timeout 60;
         proxy_intercept_errors on;
         proxy_pass https://${HUB_AUTHENTICATION_HOST}:${HUB_AUTHENTICATION_PORT};
@@ -273,7 +277,7 @@ location ~ ^/(jwt/token)/?$ {
         proxy_send_timeout 60;
         proxy_set_header Host $host:$server_port;
         proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-SSL-CERT        $ssl_client_cert;
+        proxy_set_header X-SSL-CERT        $ssl_client_escaped_cert;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Host $proxy_x_forwarded_host;
         proxy_set_header X-Forwarded-Port $proxy_x_forwarded_port;
