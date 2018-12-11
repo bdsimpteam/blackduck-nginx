@@ -256,9 +256,9 @@ location ~ ^/(api/public-key)/?$ {
 }
 
 ### CERT AUTHENTICATION
-# GET /jwt/token
+# GET /cert-auth
 
-location ~ ^/(jwt/token)/?$ {
+location ~ ^/(cert-auth)/?$ {
     client_max_body_size 3072m;
     client_body_timeout 3600s;
     if ($http_content_type ~ (!(.*application/json)) ) {
