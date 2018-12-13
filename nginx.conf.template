@@ -57,6 +57,9 @@ http {
     proxy_ssl_certificate           ${CLIENT_CERT_PATH};
     proxy_ssl_certificate_key       ${CLIENT_KEY_PATH};
 	
+    ${NO_CUSTOM_CA} ssl_verify_client           optional_no_ca;
+    ${NO_CUSTOM_CA} ssl_client_certificate      /run/secrets/AUTH_CUSTOM_CA;
+
     location /health-checks/liveness {
       add_header Content-Type "application/json";
       return 200 '{ "healthy": true }';

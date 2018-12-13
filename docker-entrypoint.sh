@@ -163,22 +163,52 @@ manageAllowDenyAccessDirectives() {
   fi
 }
 
+manageCustomSettings(){
 
-CUSTOM_CERT=0
-if [ -f $secretsMountPath/WEBSERVER_CUSTOM_CERT_FILE ] && [ -f $secretsMountPath/WEBSERVER_CUSTOM_KEY_FILE ]; then
-	echo "Custom webserver cert and key found"
-	CUSTOM_CERT=1
-	certPath="${secretsMountPath}/WEBSERVER_CUSTOM_CERT_FILE"
-	keyPath="${secretsMountPath}/WEBSERVER_CUSTOM_KEY_FILE"
+  # Configure webserver to use the custom certificate and key pair.
+  if [ -f $secretsMountPath/WEBSERVER_CUSTOM_CERT_FILE ] && [ -f $secretsMountPath/WEBSERVER_CUSTOM_KEY_FILE ]; then
+    echo "Custom webserver cert and key found"
+    certPath="${secretsMountPath}/WEBSERVER_CUSTOM_CERT_FILE"
+    keyPath="${secretsMountPath}/WEBSERVER_CUSTOM_KEY_FILE"
 
-	echo "Using $certPath and $keyPath for webserver"
+    echo "Using $certPath and $keyPath for webserver"
 
-	manageRootCertificate
-else
-	echo "Custom webserver cert and/or key not found in ${secretsMountPath}. Generating self-signed certs to use for SSL connection"
-	createSelfSignedServerCert
-fi
+    manageRootCertificate
+  else
+    echo "Custom webserver cert and/or key not found in ${secretsMountPath}. Generating self-signed certs to use for SSL connection"
+    createSelfSignedServerCert
+  fi
 
+
+  # Configure to enable/disable the authentication with certificate.
+  customCaComment=""
+  if [ -f $secretsMountPath/AUTH_CUSTOM_CA ]; then
+    echo "Custom CA for authentication found. Certificate Authentication is enabled."
+  else
+    echo "Custom CA cert not found in ${secretsMountPath}. Certificate Authentication is disabled."
+    customCaComment="# "
+  fi
+
+   # Configure to enable/disable binary uploads.
+  binaryUploadComment=""
+  if [ -n "$USE_BINARY_UPLOADS" ] && [ "$USE_BINARY_UPLOADS" -eq "1" ];
+  then
+    echo "Enabling upload cache service rules."
+    targetUploadCacheHost="${HUB_UPLOAD_CACHE_HOST:-uploadcache}"
+    targetUploadCachePort="${HUB_UPLOAD_CACHE_PORT:-9443}"
+    binaryUploadMaxSize="${BINARY_UPLOAD_MAX_SIZE:-6144m}"
+    echo "UploadCache host: $targetUploadCacheHost"
+    echo "UploadCache port: $targetUploadCachePort"
+    cat /etc/nginx/upload.nginx.conf.template | sed 's/${HUB_UPLOAD_CACHE_HOST}/'"$targetUploadCacheHost"'/g' \
+     | sed 's/${HUB_UPLOAD_CACHE_PORT}/'"$targetUploadCachePort"'/g' \
+     | sed 's/${BINARY_UPLOAD_MAX_SIZE}/'"$binaryUploadMaxSize"'/g'> /etc/nginx/upload.nginx.conf
+  else
+    echo "Disabling upload cache service rules."
+    binaryUploadComment="# "
+  fi
+}
+
+manageCustomSettings
 createBlackduckSystemClientCertificate
 
 ipv6Comment=""
@@ -226,23 +256,6 @@ else
   alertComment="# "
 fi
 
-# Conditionally add upload service rules
-binaryUploadComment=""
-if [ -n "$USE_BINARY_UPLOADS" ] && [ "$USE_BINARY_UPLOADS" -eq "1" ];
-then
-  echo "Enabling upload cache service rules."
-  targetUploadCacheHost="${HUB_UPLOAD_CACHE_HOST:-uploadcache}"
-  targetUploadCachePort="${HUB_UPLOAD_CACHE_PORT:-9443}"
-  binaryUploadMaxSize="${BINARY_UPLOAD_MAX_SIZE:-6144m}"
-  echo "UploadCache host: $targetUploadCacheHost"
-  echo "UploadCache port: $targetUploadCachePort"
-  cat /etc/nginx/upload.nginx.conf.template | sed 's/${HUB_UPLOAD_CACHE_HOST}/'"$targetUploadCacheHost"'/g' \
-   | sed 's/${HUB_UPLOAD_CACHE_PORT}/'"$targetUploadCachePort"'/g' \
-   | sed 's/${BINARY_UPLOAD_MAX_SIZE}/'"$binaryUploadMaxSize"'/g'> /etc/nginx/upload.nginx.conf
-else
-  echo "Disabling upload cache service rules."
-  binaryUploadComment="# "
-fi
 
 # This sets the host and port variable in proxy_pass for configuration.
 
@@ -259,6 +272,7 @@ cat /etc/nginx/nginx.conf.template | sed 's/${HUB_WEBSERVER_PORT}/'"$targetWebse
 | sed 's~${CLIENT_CERT_PATH}~'"${WEBSERVER_HOME}/security/blackduck_system.crt"'~g' \
 | sed 's~${CLIENT_KEY_PATH}~'"${WEBSERVER_HOME}/security/blackduck_system.key"'~g' \
 | sed 's/${NO_IPV6}/'"$ipv6Comment"'/g' \
+| sed 's/${NO_CUSTOM_CA}/'"$customCaComment"'/g' \
 | sed 's/${NO_ALERT}/'"$alertComment"'/g' \
 | sed 's/${ALLOW_DENY_ACCESS_DIRECTIVES}/'"$allowDenyAccessDirectives"'/g' \
 | sed 's/${NO_BINARY_UPLOADS}/'"$binaryUploadComment"'/g' \
