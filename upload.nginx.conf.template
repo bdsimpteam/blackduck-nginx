@@ -1,8 +1,9 @@
 ### Upload Cache Module
 # * /upload/*
 # POST api/upload
+# POST api/scans/{scanId}/sources
 
-location ~ ^/(api/uploads)/?$ {
+location ~ ^/(api/uploads|api/scans/([a-f0-9\-]+)/sources)/?$ {
     client_max_body_size ${BINARY_UPLOAD_MAX_SIZE};
     client_body_timeout 3600s;
 
