@@ -1,13 +1,10 @@
 ### Upload Cache Module
-# * /upload/*
-# POST api/upload
-# POST api/scans/{scanId}/sources
+# POST api/upload (BDBA)
 
-location ~ ^/(api/uploads|api/scans/([a-f0-9\-]+)/sources)/?$ {
+location ~ ^/(api/uploads)/?$ {
     client_max_body_size ${BINARY_UPLOAD_MAX_SIZE};
     client_body_timeout 3600s;
 
-    # only allow POST from the nginx.
     limit_except POST {
     deny all;
     }
@@ -38,3 +35,35 @@ location ~ ^/(api/uploads|api/scans/([a-f0-9\-]+)/sources)/?$ {
 }
 
 
+
+# POST api/scan-sources
+# HEAD api/scan-sources/{fileSignature}
+
+location ^~ /api/scan-sources {
+    client_max_body_size 5m;
+    client_body_timeout 3600s;
+
+    if ($http_content_type ~ (!(.*(application/json|multipart/mixed))) ) {
+      error_page 500 502 503 504 /error.html;
+    }
+
+    proxy_connect_timeout 60;
+    proxy_intercept_errors on;
+    proxy_pass https://${HUB_UPLOAD_CACHE_HOST}:${HUB_UPLOAD_CACHE_PORT};
+    proxy_pass_header X-Host;
+    proxy_read_timeout 3600;
+    proxy_redirect off;
+    proxy_send_timeout 60;
+    proxy_set_header Host $host:$server_port;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Host $proxy_x_forwarded_host;
+    proxy_set_header X-Forwarded-Port $proxy_x_forwarded_port;
+    proxy_set_header X-Forwarded-Proto $proxy_x_forwarded_proto;
+    proxy_cookie_path / "/; secure";
+    proxy_buffers 8 512k;
+    proxy_buffer_size 2048k;
+    proxy_busy_buffers_size 2048k;
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    add_header X-Frame-Options SAMEORIGIN;
+}

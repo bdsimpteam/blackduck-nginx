@@ -188,24 +188,6 @@ manageCustomSettings(){
     echo "Custom CA cert not found in ${secretsMountPath}. Certificate Authentication is disabled."
     customCaComment="# "
   fi
-
-   # Configure to enable/disable binary uploads.
-  binaryUploadComment=""
-  if [ -n "$USE_BINARY_UPLOADS" ] && [ "$USE_BINARY_UPLOADS" -eq "1" ];
-  then
-    echo "Enabling upload cache service rules."
-    targetUploadCacheHost="${HUB_UPLOAD_CACHE_HOST:-uploadcache}"
-    targetUploadCachePort="${HUB_UPLOAD_CACHE_PORT:-9443}"
-    binaryUploadMaxSize="${BINARY_UPLOAD_MAX_SIZE:-6144m}"
-    echo "UploadCache host: $targetUploadCacheHost"
-    echo "UploadCache port: $targetUploadCachePort"
-    cat /etc/nginx/upload.nginx.conf.template | sed 's/${HUB_UPLOAD_CACHE_HOST}/'"$targetUploadCacheHost"'/g' \
-     | sed 's/${HUB_UPLOAD_CACHE_PORT}/'"$targetUploadCachePort"'/g' \
-     | sed 's/${BINARY_UPLOAD_MAX_SIZE}/'"$binaryUploadMaxSize"'/g'> /etc/nginx/upload.nginx.conf
-  else
-    echo "Disabling upload cache service rules."
-    binaryUploadComment="# "
-  fi
 }
 
 manageCustomSettings
@@ -256,7 +238,6 @@ else
   alertComment="# "
 fi
 
-
 # This sets the host and port variable in proxy_pass for configuration.
 
 # Replace each variables in the template with either the default value or specified from an orchestration tool.
@@ -294,6 +275,18 @@ fi
 cat /etc/nginx/authentication.nginx.conf.template | sed 's/${HUB_AUTHENTICATION_HOST}/'"$targetAuthenticationHost"'/g' | sed 's/${HUB_AUTHENTICATION_PORT}/'"$targetAuthenticationPort"'/g' > /etc/nginx/authentication.nginx.conf
 
 cat /etc/nginx/scan.nginx.conf.template | sed 's/${HUB_SCAN_HOST}/'"$targetScanHost"'/g' | sed 's/${HUB_SCAN_PORT}/'"$targetScanPort"'/g' > /etc/nginx/scan.nginx.conf
+
+# Configure to enable/disable binary uploads.
+echo "Enabling upload cache service rules."
+targetUploadCacheHost="${HUB_UPLOAD_CACHE_HOST:-uploadcache}"
+targetUploadCachePort="${HUB_UPLOAD_CACHE_PORT:-9443}"
+binaryUploadMaxSize="${BINARY_UPLOAD_MAX_SIZE:-6144m}"
+echo "UploadCache host: $targetUploadCacheHost"
+echo "UploadCache port: $targetUploadCachePort"
+cat /etc/nginx/upload.nginx.conf.template | sed 's/${HUB_UPLOAD_CACHE_HOST}/'"$targetUploadCacheHost"'/g' \
+| sed 's/${HUB_UPLOAD_CACHE_PORT}/'"$targetUploadCachePort"'/g' \
+| sed 's/${BINARY_UPLOAD_MAX_SIZE}/'"$binaryUploadMaxSize"'/g'> /etc/nginx/upload.nginx.conf
+
 
 # Check if we are trying to run 'webserver' as 'root'
 if [ "$(id -u)" = '0' ]; then
