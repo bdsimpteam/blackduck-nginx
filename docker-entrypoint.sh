@@ -254,6 +254,7 @@ cat /etc/nginx/nginx.conf.template | sed 's/${HUB_WEBSERVER_PORT}/'"$targetWebse
 | sed 's~${CLIENT_KEY_PATH}~'"${WEBSERVER_HOME}/security/blackduck_system.key"'~g' \
 | sed 's/${NO_IPV6}/'"$ipv6Comment"'/g' \
 | sed 's/${NO_CUSTOM_CA}/'"$customCaComment"'/g' \
+| sed 's~${AUTH_CUSTOM_CA}~'"${secretsMountPath}/AUTH_CUSTOM_CA"'~g' \
 | sed 's/${NO_ALERT}/'"$alertComment"'/g' \
 | sed 's/${ALLOW_DENY_ACCESS_DIRECTIVES}/'"$allowDenyAccessDirectives"'/g' \
 | sed 's/${NO_BINARY_UPLOADS}/'"$binaryUploadComment"'/g' \
