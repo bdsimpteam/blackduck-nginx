@@ -77,7 +77,7 @@ http {
     include /etc/nginx/scan.nginx.conf;
 
     # Include upload routes and configuration
-    ${NO_BINARY_UPLOADS}include /etc/nginx/upload.nginx.conf;
+    include /etc/nginx/upload.nginx.conf;
 
     # Possibly include alert routes and configuration.
     ${NO_ALERT}include /etc/nginx/alert.nginx.conf;
