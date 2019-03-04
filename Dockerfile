@@ -41,7 +41,7 @@ RUN set -e \
     && chgrp -R 0 "/var/cache/nginx/" \
     && chmod -R 775 "/var/log/nginx" "/var/cache/nginx/" "/var/run" "/etc/nginx" \
     && chown nginx:root $WEBSERVER_HOME/logrotate \
-    && chmod 777 $WEBSERVER_HOME/logrotate \
+    && chmod 0775 $WEBSERVER_HOME/logrotate \
     && curl -L https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-$FILEBEAT_VERSION-linux-x86_64.tar.gz | \
  	   tar xz -C $WEBSERVER_HOME \
 	&& mv $WEBSERVER_HOME/filebeat-$FILEBEAT_VERSION-linux-x86_64 $WEBSERVER_HOME/filebeat \
@@ -59,7 +59,7 @@ RUN chmod 644 $WEBSERVER_HOME/filebeat/filebeat.yml
 COPY logrotate.sh $WEBSERVER_HOME/bin
 RUN chown nginx:root $WEBSERVER_HOME/bin/logrotate.sh
 RUN chmod 0775 $WEBSERVER_HOME/bin/logrotate.sh
-COPY logrotate.nginx.config /etc/logrotate.d/nginx
+COPY logrotate.config /etc/logrotate.d/nginx
 
 VOLUME [ "/etc/nginx/conf.d" ]
 
