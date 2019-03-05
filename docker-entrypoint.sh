@@ -217,6 +217,9 @@ then
     .$WEBSERVER_HOME/filebeat/filebeat -c $WEBSERVER_HOME/filebeat/filebeat.yml start &
 fi
 
+echo "Attempting to start logrotate via background script "
+/opt/blackduck/hub/webserver/bin/logrotate.sh &
+
 echo "Attempting to start webserver."
 set -e
 
