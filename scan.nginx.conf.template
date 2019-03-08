@@ -69,8 +69,9 @@ location ~ ^/(api/codelocations/([a-f0-9\-]+)/scan-summaries|api/scan-summaries/
 ### Snippet (FS)
 # POST /api/fp-import/scans/{scanId}
 # GET  /api/internal/scans/{scanId}/unmatched-files
+# PUT  /api/internal/scans/{scanId}/uploaded-file-data
 
-location ~ ^/(api/fp-import/scans/([a-f0-9\-]+)|api/internal/scans/([a-f0-9\-]+)/unmatched-files)/?$ {
+location ~ ^/(api/fp-import/scans/([a-f0-9\-]+)|api/internal/scans/([a-f0-9\-]+)/unmatched-files|api/internal/scans/([a-f0-9\-]+)/uploaded-file-data)/?$ {
     client_max_body_size 3072m;
     client_body_timeout 3600s;
     if ($http_content_type ~ (!(.*application/json)) ) {
