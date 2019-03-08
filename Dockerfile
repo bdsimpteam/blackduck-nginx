@@ -1,4 +1,4 @@
-FROM blackducksoftware/hub-docker-common:1.0.2 as docker-common
+FROM blackducksoftware/hub-docker-common:1.0.4 as docker-common
 FROM nginx:1.13.6-alpine
 
 ARG VERSION
