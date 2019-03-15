@@ -36,8 +36,7 @@ location ~ ^/(api/uploads)/?$ {
 
 
 
-# POST api/scan-sources
-# HEAD api/scan-sources/{fileSignature}
+# PUT api/scan-sources/{fileSignature}
 
 location ^~ /api/scan-sources {
     client_max_body_size 5m;
