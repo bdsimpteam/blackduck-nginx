@@ -1,0 +1,25 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- master
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- script: echo Hello, world!
+  displayName: 'Run a one-line script'
+
+#Log in to ACR using the configured Variable Group
+docker login caren.azurecr.io -u $(acr.username) -p $(acr.password)
+  
+#Call Detect, passing the Docker Image location
+bash <(curl -s -L https://detect.synopsys.com/detect7.sh) \
+--blackduck.url=$(blackduck.url) \
+--blackduck.api.token=$(blackduck.api.token) \
+--detect.docker.image=<registryname>.azurecr.io/<containername>:$(Build.BuildId) \
+--detect.project.name=$(Build.DefinitionName) \
+--detect.project.version.name=$(Build.BuildNumber)
